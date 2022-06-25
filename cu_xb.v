@@ -1,5 +1,5 @@
-module crossbar #(parameter DATA_WIDTH, ADDRESS_WIDTH, SIGNAL_WIDTH)
-		( 
+module crossbar #(parameter DATA_WIDTH=16, ADDRESS_WIDTH=4, SIGNAL_WIDTH=3)
+		(input  wire clk_dcd, ps_xb_stall,
 		
 		input wire[(SIGNAL_WIDTH-1):0] ps_xb_w_cuEn,
 
@@ -18,11 +18,18 @@ module crossbar #(parameter DATA_WIDTH, ADDRESS_WIDTH, SIGNAL_WIDTH)
 		);
 	
 	wire x,y;
+	reg[(ADDRESS_WIDTH-1):0] ps_xb_wadd_p;
+	reg ps_xb_stall_p;
+
+always @(posedge clk_dcd) begin
+	ps_xb_stall_p<=ps_xb_stall;
+	ps_xb_wadd_p<=ps_xb_wadd;
+end
 
 	wire cuEn=ps_xb_w_cuEn[0]|ps_xb_w_cuEn[1]|ps_xb_w_cuEn[2];
 
-	assign x=(ps_xb_raddx==ps_xb_wadd);
-	assign y=(ps_xb_raddy==ps_xb_wadd);
+	assign x=((ps_xb_raddx==ps_xb_wadd)&ps_xb_stall_p&ps_xb_stall)|((ps_xb_raddx==ps_xb_wadd_p)&(~ps_xb_stall_p)&ps_xb_stall);
+	assign y=((ps_xb_raddy==ps_xb_wadd)&ps_xb_stall_p&ps_xb_stall)|((ps_xb_raddy==ps_xb_wadd_p)&(~ps_xb_stall_p)&ps_xb_stall);
 
 
 always@(*)
@@ -38,11 +45,11 @@ end
 always@(*)
 begin
   case ({ps_xb_w_cuEn[2],ps_xb_w_cuEn[1],ps_xb_w_cuEn[0],ps_xb_w_bcEn})
-  {1'b0,1'b0,1'b0,1'b1}:xb_rf_dt<=bc_dt;
-  {1'b0,1'b0,1'b1,1'b0}:xb_rf_dt<=alu_xb_dt;
-  {1'b0,1'b1,1'b0,1'b0}:xb_rf_dt<=mul_xb_dt;
-  {1'b1,1'b0,1'b0,1'b0}:xb_rf_dt<=shf_xb_dt;
-  default: xb_rf_dt<=0;
+  {1'b0,1'b0,1'b0,1'b1}:xb_rf_dt=bc_dt;
+  {1'b0,1'b0,1'b1,1'b0}:xb_rf_dt=alu_xb_dt;
+  {1'b0,1'b1,1'b0,1'b0}:xb_rf_dt=mul_xb_dt;
+  {1'b1,1'b0,1'b0,1'b0}:xb_rf_dt=shf_xb_dt;
+  default: xb_rf_dt=alu_xb_dt;
   endcase
 end
 

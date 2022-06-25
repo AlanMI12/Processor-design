@@ -1,7 +1,7 @@
-module ureg_add_dcdr(clk,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
+module ureg_add_dcdr(clk_dcd,ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_dmiaddinst,ps_urgtrnsinst,ps_loop,ps_dm_wrb,ps_ureg1_add,ps_ureg2_add,ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en,ps_xb_dm_rd_add,ps_xb_dm_wrt_add,ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add);
 
-input clk;
-input ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_urgtrnsinst,ps_dm_wrb;
+input clk_dcd;
+input ps_pshstck,ps_popstck,ps_imminst,ps_dminst,ps_dmiaddinst,ps_urgtrnsinst,ps_loop,ps_dm_wrb;
 input[7:0] ps_ureg1_add,ps_ureg2_add;
 output ps_xb_w_bcEn,ps_dg_wrt_en,ps_wrt_en;
 output[3:0] ps_xb_dm_rd_add,ps_xb_dm_wrt_add;
@@ -13,7 +13,7 @@ reg[4:0] ps_dg_rd_add,ps_rd_add,ps_dg_wrt_add,ps_wrt_add;
 
 always@(*) begin
 	
-	if(ps_pshstck | (ps_dminst & ps_dm_wrb)) begin
+	if(ps_pshstck | ps_loop | ((ps_dminst | ps_dmiaddinst) & ps_dm_wrb)) begin
 
 		if(ps_ureg1_add[7:4]==4'h0) begin
 			ps_xb_dm_rd_add= ps_ureg1_add[3:0];
@@ -65,7 +65,7 @@ always@(*) begin
 		ps_rd_add= 5'b00000;
 	end
 	
-	if( ps_popstck | ps_imminst | ps_urgtrnsinst | ( ps_dminst & !ps_dm_wrb ) ) begin
+	if( ps_popstck | ps_imminst | ps_urgtrnsinst | ( (ps_dminst | ps_dmiaddinst) & !ps_dm_wrb ) ) begin
 	
 		if(ps_ureg1_add[7:4]==4'h0) begin
 			ps_xb_dm_wrt_add= ps_ureg1_add[3:0];
@@ -79,9 +79,9 @@ always@(*) begin
 	
 end
 
-always@(posedge clk) begin
+always@(posedge clk_dcd) begin
 
-	if( ps_popstck | ps_imminst | ps_urgtrnsinst | ( ps_dminst & !ps_dm_wrb ) ) begin
+	if( ps_popstck | ps_imminst | ps_urgtrnsinst | ( (ps_dminst | ps_dmiaddinst ) & !ps_dm_wrb ) ) begin
 
 		if( (ps_ureg1_add[7:4]==4'b0010) | (ps_ureg1_add[7:4]==4'b0001) ) begin
 			ps_dg_wrt_add<= ps_ureg1_add[4:0];

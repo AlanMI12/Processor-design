@@ -1,10 +1,10 @@
 #Script to test o/p
 import time
 
-dm_loc="C:\\Users\\Ashwin-Pradeep\\Desktop\\Project-Final-Year\\GIT-repo\\Processor-design\\Processor-design\\dm_file.txt"                          #Location of dm file - ../ indicates the folder "memory_files" where "dm_file.txt" is, is one folder up the current folder of script
-memck_loc="C:\\Users\\Ashwin-Pradeep\\Desktop\\Project-Final-Year\\GIT-repo\\Processor-design\\Processor-design\\Test-cases\\Test Passed\\ALU-tests\\AshwintestsALU\\test0\\"                              #Location of Instruction folder - file with instructions is in folder "Instructions" in the current folder of script
+dm_loc="C:\modeltech64_10.5\examples\ADI\\dm_file.txt"                          #Location of dm file - ../ indicates the folder "memory_files" where "dm_file.txt" is, is one folder up the current folder of script
+memck_loc="C:\modeltech64_10.5\examples\ADI\Test\\"                              #Location of Instruction folder - file with instructions is in folder "Instructions" in the current folder of script
 find=".memcheck"
-file_name="factorial.txt"                                                                    #Name of instruction file - default name "inst.txt"
+file_name="p2_1.txt"                                                                    #Name of instruction file - default name "inst.txt"
 
 #file_name=input("Enter name of Instruction file : ")                                   #Uncomment for option allowing manual entering of Instruction file name
 

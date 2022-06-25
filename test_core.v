@@ -1,19 +1,20 @@
 module test_core();
 
-reg clk, reset,interrupt;
+reg clk, reset,interrupt,stallb_en;
 reg[2:0] count,rand;
 reg[9:0] timeout;
 
 integer i;
 
 core_top #(.PMA_SIZE(16), .PMD_SIZE(32), .DMA_SIZE(16), .DMD_SIZE(16), .RF_DATASIZE(16), .ADDRESS_WIDTH(4), .SIGNAL_WIDTH(3), 
-			.PM_LOCATE("C:\\Users\\Ashwin-Pradeep\\Desktop\\Project-Final-Year\\GIT-repo\\Processor-design\\Processor-design\\pm_file.txt"), 
-			.DM_LOCATE("C:\\Users\\Ashwin-Pradeep\\Desktop\\Project-Final-Year\\GIT-repo\\Processor-design\\Processor-design\\dm_file.txt")
+			.PM_LOCATE("C:\\Users\\alanm\\OneDrive\\Desktop\\ADSP_Project\\Test_folder\\pm_file.txt"), 
+			.DM_LOCATE("C:\\Users\\alanm\\OneDrive\\Desktop\\ADSP_Project\\Test_folder\\dm_file.txt")
 			)
 	core_obj	(
 				clk,
 				reset,
-				interrupt
+				interrupt,
+				stallb_en
 			);
 
 initial 
@@ -28,12 +29,19 @@ begin
 	#1 reset=0;
 	#2 reset=1;
 end
+initial begin
+	stallb_en=1;
+	/*forever begin
+		#10 stallb_en=0;
+		#20 stallb_en=1;
+	end*/
+end
 
 always@(posedge clk or negedge reset) begin
 	if(!reset) begin
 		interrupt<=1'b0;
 		count<=3'b0;
-		timeout<=10'b0;
+		timeout<=12'b0;
 	end else begin
 		timeout<=timeout+1'b1;
 		rand<=$urandom_range(0,7);
@@ -52,7 +60,7 @@ end
 
 always@(*) begin
 
-	if( (core_obj.mem_obj.pm_ps_op[31:22]==10'b1) | (core_obj.ps_obj.ps_stcky[2]) | (timeout==10'h3ff) ) begin
+	if( (core_obj.mem_obj.pm_ps_op[31:22]==10'b1) | (core_obj.ps_obj.ps_stcky[2]) | (timeout==12'hfff) ) begin
 		for(i=0;i<100;i=i+1) begin
 			$write("/");	
 		end
@@ -68,7 +76,7 @@ always@(*) begin
 		end
 		$write("\n");
 		#50;
-		$system("python C:\\Users\\Ashwin-Pradeep\\Desktop\\Project-Final-Year\\GIT-repo\\Processor-design\\Processor-design\\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
+		////////////////////////////////////////$system("python C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Processor-design\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
 		#50;
 		$stop;
 	end

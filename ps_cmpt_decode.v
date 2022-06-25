@@ -1,29 +1,30 @@
-module cmpt_inst_dcdr(clk,rst,cpt_en,bt_5t25, ps_alu_en,ps_mul_en, ps_shf_en, ps_alu_log, ps_mul_otreg, ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls, ps_alu_sc, ps_xb_w_cuEn,ps_mul_dtsts, ps_xb_rd_a0, ps_xb_raddy, ps_xb_wrt_a);
+module cmpt_inst_dcdr(clk,rst,cpt_en,bt_26,bt_5t25, ps_alu_en,ps_mul_en, ps_shf_en, ps_cu_float, ps_alu_sc1,ps_alu_sc2, ps_mul_otreg, ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls, ps_xb_w_cuEn,ps_mul_dtsts, ps_xb_rd_a0, ps_xb_raddy, ps_xb_wrt_a);
 
 parameter wrt=16;
 
-input clk,rst,cpt_en;
+input clk,rst,cpt_en,bt_26;
 input[20:0] bt_5t25;
 
-output ps_alu_en, ps_mul_en, ps_shf_en, ps_alu_log, ps_mul_otreg;
-output[1:0] ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls;
-output[2:0] ps_alu_sc, ps_xb_w_cuEn;
+output ps_alu_en, ps_mul_en, ps_shf_en, ps_cu_float, ps_mul_otreg;
+output[1:0] ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls,ps_alu_sc2;
+output[2:0] ps_alu_sc1, ps_xb_w_cuEn;
 output[3:0] ps_mul_dtsts, ps_xb_rd_a0, ps_xb_raddy, ps_xb_wrt_a;
 
-reg ps_alu_en, ps_mul_en, ps_shf_en, ps_alu_log, ps_mul_otreg;
-reg[1:0] ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls;
-reg[2:0] ps_alu_sc,wrt_en;
+reg ps_cu_float,ps_alu_en, ps_mul_en, ps_shf_en, ps_mul_otreg;
+reg[1:0] ps_alu_hc, ps_mul_cls, ps_mul_sc, ps_shf_cls,ps_alu_sc2;
+reg[2:0] ps_alu_sc1,wrt_en;
 reg[3:0] ps_mul_dtsts, ps_xb_rd_a0, ps_xb_raddy;
 
 reg[2:0] ps_xb_w_cuEn;
 reg[3:0] ps_xb_wrt_a;
 
-//CU Enables
+//CU Enables and floating point signal
 always @* begin
 
 	ps_alu_en= !bt_5t25[20] & !bt_5t25[19] & cpt_en;           //ALU enable
 	ps_mul_en= !bt_5t25[20] & bt_5t25[19] & cpt_en;		   //MUL enable
-        ps_shf_en= bt_5t25[20] & !bt_5t25[19] & cpt_en;		   //Shifter enable
+    ps_shf_en= bt_5t25[20] & !bt_5t25[19] & cpt_en;		   //Shifter enable
+	ps_cu_float= bt_26;										//Floating point signal
 
 end
 
@@ -32,15 +33,15 @@ always @* begin
 
 	if(ps_alu_en) begin
 
-		ps_alu_log= bt_5t25[17];                          //High for logical, low for arithematic
-		ps_alu_hc= bt_5t25[16:15];			  //Higher Classification bits
-		ps_alu_sc= bt_5t25[14:12];			  //Sub Classification bits
+		ps_alu_hc= bt_5t25[18:17];			  //Higher Classification bits
+		ps_alu_sc1= bt_5t25[15:13];			  //Sub Classification bits
+		ps_alu_sc2= {bt_5t25[16],bt_5t25[12]};
 
 	end else begin
 
-		ps_alu_log= 1'b0;
 		ps_alu_hc= 2'b0;
-		ps_alu_sc= 3'b0;
+		ps_alu_sc1= 3'b0;
+		ps_alu_sc2= 2'b0;
 
 	end
 
@@ -85,7 +86,7 @@ end
 //Register File
 always @(*) begin
 			
-	wrt_en[0]= ps_alu_en & !bt_5t25[14];
+	wrt_en[0]= ps_alu_en & !(!bt_5t25[18] & bt_5t25[12] & bt_5t25[14]);
 	wrt_en[1]= ps_mul_en & !bt_5t25[16];
 	wrt_en[2]= ps_shf_en;
 	

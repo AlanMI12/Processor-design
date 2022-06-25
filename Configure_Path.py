@@ -1,11 +1,11 @@
 import configparser
 cnfg = configparser.ConfigParser()
 cnfg.optionxform = str
-cnfg['PATHS'] = {'DIR': r"C:\modeltech64_10.5\examples\SAC\Instructions",
-        'PM_LOCATE': r"C:\modeltech64_10.5\examples\memory_files\pm_file.txt",
-        'DM_LOCATE': r"C:\modeltech64_10.5\examples\memory_files\dm_file.txt",
-        'DMrdfl_LOCATE': r"C:\modeltech64_10.5\examples\SAC\DMrd_files",
-        'MEMfail_LOCATE': r"C:\modeltech64_10.5\examples\SAC\MEMfail_files"}
+cnfg['PATHS'] = {'DIR': r"C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Test_folder\test_files",
+        'PM_LOCATE': r"C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Test_folder\pm_file.txt",
+        'DM_LOCATE': r"C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Test_folder\dm_file.txt",
+        'DMrdfl_LOCATE': r"C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Test_folder\DMrd",
+        'MEMfail_LOCATE': r"C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Test_folder\MEMfail"}
 cnfg['IDENTIFIER'] = {'idntfr': "_"}
 cnfg['AVOID'] = {'pm_file.txt': "",
         'dm_file.txt': ""}
