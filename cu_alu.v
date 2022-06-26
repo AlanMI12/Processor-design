@@ -18,7 +18,7 @@ module alu
 
                 // Flags
                 output reg alu_ps_az, alu_ps_an, alu_ps_ac, alu_ps_av, alu_ps_au, alu_ps_as, alu_ps_ai,
-                output wire alu_ps_compd
+                output reg alu_ps_compd
             );
 
     //---------------------------------------------------------------------------------------
@@ -269,13 +269,16 @@ module alu
     reg [RF_DATASIZE-1:0] num_x, num_y;
     reg temp_max;   // temp_max = 1 if y is larger when taking true values
     reg max;        // max = 1 if y is larger
+    reg [RF_DATASIZE-1:0] norm_x, norm_y;
 
     always@(*)
     begin
         if(alu_hc == 2'b10)         //MIN, MAX, CLIP and Comp instructions
         begin
-            num_x = alu_float ? ((x[14:10] == 5'b0_0000) ? 15'b000_0000_0000_0000 : x[14:0]) : ((x ^ {16{x[15]}}) + x[15]);
-            num_y = alu_float ? ((y[14:10] == 5'b0_0000) ? 15'b000_0000_0000_0000 : y[14:0]) : ((y ^ {16{y[15]}}) + y[15]);
+            norm_x = ((x[14:10] == 5'b0_0000) & alu_float) ? {x[15],15'b000_0000_0000_0000} : x;
+            norm_y = ((y[14:10] == 5'b0_0000) & alu_float) ? {y[15],15'b000_0000_0000_0000} : y;
+            num_x = alu_float ? norm_x[14:0] : ((x ^ {16{x[15]}}) + x[15]);
+            num_y = alu_float ? norm_y[14:0] : ((y ^ {16{y[15]}}) + y[15]);
 
             if(num_x[15] ^ num_y[15])
                 temp_max = num_y[15];
@@ -319,6 +322,9 @@ module alu
         end
         else
         begin
+            norm_x = 0;
+            norm_y = 0;
+            num_x = 0;
             num_y = 0;
             temp_max = 0;
             max = 0;
@@ -342,8 +348,8 @@ module alu
                         alu_ps_ai = (invld_x | invld_y);
                     else
                         alu_ps_ai = (invld_x | invld_y) | (infs & ~(x[15] ^ y[15]));
-                    alu_ps_av = (alu_sc1[1] & alu_sc2[0]) ? 1'b0 : (e[5] ^ (&e[4:0]));      //AV
-                    alu_ps_au = (alu_sc1[1] & alu_sc2[0]) ? 1'b0 : e[15] | ~(|e[14:0]);     //AU
+                    alu_ps_av = (alu_sc1[1] & alu_sc2[0]) ? 1'b0 : (e[5] ^ (&e[4:0])) & (~alu_ps_ai);      //AV
+                    alu_ps_au = (alu_sc1[1] & alu_sc2[0]) ? 1'b0 : e[15] | ~(|e[14:0]) & (~alu_ps_ai);     //AU
 
                     alu_xb_dt = (invld_x | invld_y) ? 16'hffff : ((~alu_sc2[1] & alu_sc1[2]) ? {1'b0,Fz[14:0]} : Fz);
                 end
@@ -352,8 +358,8 @@ module alu
                     case(alu_sc1[2:1])
                         2'b00:      //SCALB, LOGB
                         begin
-                            alu_ps_av = alu_sc2[1] ? ((&ex | ~(|ex)) & ~invld_x) : (~y[15] & ((|sum[15:5]) | (&sum[4:0])));      //AV
-                            alu_ps_au = (sum[15] | ~(|sum[14:0])) & ~(alu_sc2[1]);             //AU
+                            alu_ps_av = (alu_sc2[1] ? ((&ex | ~(|ex)) & ~invld_x) : (~y[15] & ((|sum[15:5]) | (&sum[4:0])))) & (~alu_ps_ai);      //AV
+                            alu_ps_au = (sum[15] | ~(|sum[14:0])) & ~(alu_sc2[1]) & (~alu_ps_ai);             //AU
                             alu_ps_ai = invld_x;
                             if(alu_sc2[1])
                             begin
@@ -371,8 +377,8 @@ module alu
                         end
                         2'b01:      //TRUNC instructions
                         begin
-                            alu_ps_av = ((sum > 29) | &ex) ? 1'b1 : 1'b0;
-                            alu_ps_au = (|temp_dt_3[10:0]) & (sum < 15);
+                            alu_ps_av = (((sum > 29) | &ex) ? 1'b1 : 1'b0) & (~alu_ps_ai);
+                            alu_ps_au = (|temp_dt_3[10:0]) & (sum < 15) & (~alu_ps_ai);
                             alu_ps_ai = invld_x | (~satEn & alu_ps_av);
                             if(invld_x)
                                 alu_xb_dt = 16'hffff;
@@ -383,8 +389,8 @@ module alu
                         end
                         2'b10:      //FIX instructions
                         begin
-                            alu_ps_av = ((sum > 29) | &ex) ? 1'b1 : 1'b0;
-                            alu_ps_au = (|temp_dt_3[10:0]) & (sum < 15);
+                            alu_ps_av = (((sum > 29) | &ex) ? 1'b1 : 1'b0) & (~alu_ps_ai);
+                            alu_ps_au = (|temp_dt_3[10:0]) & (sum < 15) & (~alu_ps_ai);
                             alu_ps_ai = invld_x | (~satEn & alu_ps_av);
                             if(invld_x)
                                 alu_xb_dt = 16'hffff;
@@ -396,8 +402,8 @@ module alu
                         2'b11:      //FLOAT instructions
                         begin
                             alu_ps_ai = 1'b0;       //AI
-                            alu_ps_av = ~y[15] & ((|e[15:5]) | (&e[4:0]));      //AV
-                            alu_ps_au = e[15] | ~(|e[14:0]);                    //AU
+                            alu_ps_av = (~y[15] & ((|e[15:5]) | (&e[4:0]))) & (~alu_ps_ai);      //AV
+                            alu_ps_au = (e[15] | ~(|e[14:0])) & (~alu_ps_ai);                    //AU
                             alu_xb_dt = ~(|x) ? 16'h0000 : Fz;
                         end  
                     endcase
@@ -405,7 +411,7 @@ module alu
                 else
                 begin
                     alu_ps_au = 1'b0;       //AU
-                    alu_ps_av = (alu_sc1 == 3'b010) ? 1'b0 : (cout[RF_DATASIZE-1] ^ cout[RF_DATASIZE-2]);       //AV
+                    alu_ps_av = ((alu_sc1 == 3'b010) ? 1'b0 : (cout[RF_DATASIZE-1] ^ cout[RF_DATASIZE-2]));       //AV
                     alu_ps_ai = 1'b0;       //AI
                     alu_xb_dt = (satEn & alu_ps_av) ? (sum[15] ? 16'h7fff : 16'h8000) : ((~alu_sc2[1] & alu_sc1[1] & ~alu_sc2[0]) ? (sum >>> 1) : sum);
                 end
@@ -418,9 +424,9 @@ module alu
                 alu_ps_ai = invld_x | invld_y;    //Checking for NAN input
                 case(alu_sc1[1:0])
                     2'b00:      // Rn = MIN(Rx,Ry), Fn = MIN(Fx,Fy)
-                        alu_xb_dt = alu_ps_ai ? 16'b1111_1111_1111_1111 : (max ? x : y);
+                        alu_xb_dt = alu_ps_ai ? 16'b1111_1111_1111_1111 : (max ? norm_x : norm_y);
                     2'b10:      // Rn = MAX(Rx,Ry), Fn = MAX(Fx,Fy)
-                        alu_xb_dt = alu_ps_ai ? 16'b1111_1111_1111_1111 : (max ? y : x);
+                        alu_xb_dt = alu_ps_ai ? 16'b1111_1111_1111_1111 : (max ? norm_y : norm_x);
                     2'b01:      // Rn = CLIP Rx by Ry, Fn = CLIP Fx by Fy
                         alu_xb_dt = alu_ps_ai ? 16'b1111_1111_1111_1111 : (temp_max ? x : (alu_float ? ((x[15]) ? {1'b1,num_y} : {1'b0,num_y}) : ((x[15]) ? ({1'b0,num_y} ^ {16{1'b1}} + 1'b1): {1'b0,num_y})));
                     2'b11:      // COMP(Rx,Ry), COMP(Fx,Fy)
@@ -521,19 +527,19 @@ module alu
                     begin
                         alu_ps_au = 1'b0;       //AU
                         alu_ps_ai = invld_x;    //Checking for NAN input
-                        alu_ps_av = alu_float ? 1'b0 : ((x == 16'b1000_0000_0000_0000) ? 1'b1 : 1'b0);       //AV high only if x is highest negative fixed integer
-                        alu_xb_dt = alu_float ? {1'b0, x[RF_DATASIZE-2:0]} : ((satEn & alu_ps_av) ? 16'h7fff : (({16{x[RF_DATASIZE-1]}} ^ x) + x[RF_DATASIZE-1]));
+                        alu_ps_av = (alu_float ? 1'b0 : ((x == 16'b1000_0000_0000_0000) ? 1'b1 : 1'b0)) & (~alu_ps_ai);       //AV high only if x is highest negative fixed integer
+                        alu_xb_dt = alu_float ? ((x[14:10] == 5'b0_0000) ? 16'h0000 : {1'b0, x[RF_DATASIZE-2:0]}) : ((satEn & alu_ps_av) ? 16'h7fff : (({16{x[RF_DATASIZE-1]}} ^ x) + x[RF_DATASIZE-1]));
                     end
                     3'b100:     //Fn = Fx COPYSIGN Fy
                     begin
                         alu_ps_av = 1'b0;       //AV (reset for COPYSIGN)
                         alu_ps_au = 1'b0;       //AU
                         alu_ps_ai = invld_x | invld_y;
-                        if(x[RF_DATASIZE-2:RF_DATASIZE-6] == 5'b0_0000)
-                            alu_xb_dt = {y[RF_DATASIZE-1],15'b000_0000_0000_0000};
-                        else
-                            if(invld_x | invld_y)
+                        if(invld_x | invld_y)
                                 alu_xb_dt = 16'b1111_1111_1111_1111;
+                        else
+                            if(x[RF_DATASIZE-2:RF_DATASIZE-6] == 5'b0_0000)
+                                alu_xb_dt = {y[RF_DATASIZE-1],15'b000_0000_0000_0000};
                             else
                                 alu_xb_dt = {y[RF_DATASIZE-1], x[RF_DATASIZE-2:0]};
                     end
@@ -631,21 +637,21 @@ module alu
     always@(*)
     begin 
         //AZ
-        alu_ps_az = (alu_float & ~(alu_sc1[0] & ~alu_sc2[0] & (^alu_sc1[2:1]))) ? (alu_xb_dt[14:0] == 15'h0): (alu_xb_dt == 16'h0000);         //1st condition checks for float instr other than FIX, TRUNC, ABS Fx
+        alu_ps_az = ((alu_float & ~(alu_sc1[0] & ~alu_sc2[0] & (^alu_sc1[2:1]))) ? (alu_xb_dt[14:0] == 15'h0): (alu_xb_dt == 16'h0000)) & (~alu_ps_ai);         //1st condition checks for float instr other than FIX, TRUNC, ABS Fx
         
         //AN (reset for MANT instrucion)
-        alu_ps_an = ({alu_hc,alu_sc1} == 5'b11_010) ? 1'b0 : alu_xb_dt[RF_DATASIZE-1];
+        alu_ps_an = (({alu_hc,alu_sc1} == 5'b11_010) ? 1'b0 : alu_xb_dt[RF_DATASIZE-1]) & (~alu_ps_ai);
 
         //AC (reset for logical, COMP, MIN, MAX, PASS, ABS, CLIP and floating instructions)
-        alu_ps_ac = cout[RF_DATASIZE-1] & ~(|alu_hc) & (~alu_float) & ~({alu_hc,alu_sc2,alu_sc1} == 7'b00_01_011);
+        alu_ps_ac = (cout[RF_DATASIZE-1] & ~(|alu_hc) & (~alu_float) & ~({alu_hc,alu_sc2,alu_sc1} == 7'b00_01_011)) & (~alu_ps_ai);
 
         //AS (reset for all instr other than ABS Fx, ABS Rx, MANT)
-        alu_ps_as = ({alu_hc,alu_sc1[1]} == 3'b11_1) ? x[15] : 1'b0;
-    end
+        alu_ps_as = (({alu_hc,alu_sc1[1]} == 3'b11_1) ? x[15] : 1'b0) & (~alu_ps_ai);
 
         //COMPR
-        assign alu_ps_compd = alu_en & ({alu_hc,alu_sc1,alu_sc2} == 7'b10_011_01);
-
+        alu_ps_compd = alu_en & ({alu_hc,alu_sc1,alu_sc2} == 7'b10_011_01);
+    end
+ 
     //---------------------------------------------------------------------------------------
     // Adder
     //---------------------------------------------------------------------------------------

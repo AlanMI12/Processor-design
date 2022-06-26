@@ -76,7 +76,7 @@ always@(*) begin
 		end
 		$write("\n");
 		#50;
-		////////////////////////////////////////$system("python C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Processor-design\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
+		//////////////////////////////////////////$system("python C:\Users\alanm\OneDrive\Desktop\ADSP_Project\Processor-design\memchecker.py");                          //Command to run a_test_script.py - Update its location if neccessary
 		#50;
 		$stop;
 	end

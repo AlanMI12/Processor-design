@@ -429,7 +429,7 @@ always@(posedge clk_rf or negedge rst) begin
 	       		ps_astat<= bc_dt;
 		end else begin
 			if(alu_ps_compd) begin
-				ps_astat[15:8]<= { !alu_ps_an & !alu_ps_az, ps_astat[15:9] };
+				ps_astat[15:8]<= { ((!alu_ps_an & !alu_ps_az) & (!alu_ps_ai)), ps_astat[15:9] };
 			end
 			ps_astat[7:0]<= { shf_ps_sz, shf_ps_sv, mul_ps_mv, mul_ps_mn, alu_ps_ac, alu_ps_an, alu_ps_av, alu_ps_az };     //Update 6'b0 with compare logic later on	 
 		end

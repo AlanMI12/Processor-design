@@ -1,5 +1,5 @@
 # vsim -novopt -c -do "run -all ; quit" test_core 
-# Start time: 17:16:54 on Jun 25,2022
+# Start time: 18:30:16 on Jun 26,2022
 # ** Warning: (vsim-8891) All optimizations are turned off because the -novopt switch is in effect. This will cause your simulation to run very slowly. If you are using this switch to preserve visibility for Debug or PLI features please see the User's Manual section on Preserving Object Visibility with vopt.
 # //  ModelSim SE-64 10.5 Feb 13 2016 
 # //
@@ -14,35 +14,56 @@
 # //  is prohibited from disclosure under the Trade Secrets Act,
 # //  18 U.S.C. Section 1905.
 # //
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.test_core
 # Loading work.test_core
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.core_top
 # Loading work.core_top
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.stall_clk
 # Loading work.stall_clk
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.cu_top
 # Loading work.cu_top
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.crossbar
 # Loading work.crossbar
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.regfile
 # Loading work.regfile
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.multiplier
 # Loading work.multiplier
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.mul_sat
 # Loading work.mul_sat
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.mul_rnd
 # Loading work.mul_rnd
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.shifter
 # Loading work.shifter
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.alu
 # Loading work.alu
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.full_adder
 # Loading work.full_adder
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.memory
 # Loading work.memory
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.BC_top
 # Loading work.BC_top
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.DAG_top
 # Loading work.DAG_top
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.PS_top
 # Loading work.PS_top
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.cmpt_inst_dcdr
 # Loading work.cmpt_inst_dcdr
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.cnd_dcdr
 # Loading work.cnd_dcdr
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.ureg_add_dcdr
 # Loading work.ureg_add_dcdr
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.bc_slct_cntrl
 # Loading work.bc_slct_cntrl
+# Refreshing C:/Users/alanm/OneDrive/Desktop/ADSP_Project/Processor-design/work.iwrt
 # Loading work.iwrt
 # run -all 
 # ////////////////////////////////////////////////////////////////////////////////////////////////////
 # FINISH Instrcution Executed
 # ////////////////////////////////////////////////////////////////////////////////////////////////////
 # ** Note: $stop    : test_core.v(81)
-#    Time: 210 ns  Iteration: 0  Instance: /test_core
+#    Time: 380 ns  Iteration: 0  Instance: /test_core
 # Break in Module test_core at test_core.v line 81
 # Stopped at test_core.v line 81
 #  quit
-# End time: 17:16:55 on Jun 25,2022, Elapsed time: 0:00:01
+# End time: 18:30:19 on Jun 26,2022, Elapsed time: 0:00:03
 # Errors: 0, Warnings: 1
